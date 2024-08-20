@@ -1,22 +1,47 @@
-import { Injectable } from "@nestjs/common";
-import {InjectModel} from "@nestjs/mongoose";
-import {Model} from "mongoose";
-import {CreateTaskDto} from "./dto/create-task.dto";
-import { Task,TaskDocument } from "./schemas/task.schema";
-
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { CreateTaskDto } from './dto/create.dto';
+import { Task, TaskDocument } from './schemas/task.schema';
+import { ByIdTaskDto } from './dto/byId.dto';
+import { UpdateTaskDto } from './dto/update.dto';
 
 @Injectable()
 export class TaskService {
-    constructor(
-        @InjectModel(Task.name) private readonly taskModel: Model<TaskDocument>,
-    ){}
+  constructor(
+    @InjectModel(Task.name) private readonly taskModel: Model<TaskDocument>,
+  ) {}
 
-    async create(createTaskDto:CreateTaskDto): Promise<Task>{
-        return this.taskModel.create(createTaskDto);
-    }
+  async create(createTaskDto: CreateTaskDto): Promise<Task> {
+    return await this.taskModel.create(createTaskDto);
+  }
 
-    async findAll(): Promise<Task[]>{
-        return this.taskModel.find().exec();
-    }
+  async findAll({ _id }: ByIdTaskDto): Promise<Task[]> {
+    return this.taskModel
+      .find({
+        user_id: _id,
+      })
+      .exec();
+  }
 
+  async update({ _id, task }: UpdateTaskDto) {
+    return this.taskModel.findByIdAndUpdate(
+      _id,
+      { task },
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
+  }
+
+  async remove({ _id }: ByIdTaskDto) {
+    return this.taskModel
+      .findByIdAndUpdate(
+        _id,
+        { status: false },
+        { new: true, runValidators: true },
+      )
+      .exec();
+  }
 }
