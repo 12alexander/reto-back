@@ -6,10 +6,7 @@ export type TaskDocument = Task & Document;
 @Schema()
 export class Task {
   @Prop({ type: Types.ObjectId, auto: true })
-  _id: Types.ObjectId;
-
-  @Prop()
-  user_id: string;
+  user_id: Types.ObjectId;
 
   @Prop()
   task: string;

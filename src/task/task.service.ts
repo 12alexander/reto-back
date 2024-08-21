@@ -5,6 +5,7 @@ import { CreateTaskDto } from './dto/create.dto';
 import { Task, TaskDocument } from './schemas/task.schema';
 import { ByIdTaskDto } from './dto/byId.dto';
 import { UpdateTaskDto } from './dto/update.dto';
+import { CreateTaskI } from './interface/create.dto';
 
 @Injectable()
 export class TaskService {
@@ -12,7 +13,7 @@ export class TaskService {
     @InjectModel(Task.name) private readonly taskModel: Model<TaskDocument>,
   ) {}
 
-  async create(createTaskDto: CreateTaskDto): Promise<Task> {
+  async create(createTaskDto: CreateTaskI): Promise<Task> {
     return await this.taskModel.create(createTaskDto);
   }
 
@@ -35,7 +36,7 @@ export class TaskService {
     );
   }
 
-  async remove({ _id }: ByIdTaskDto) {
+  async remove(_id: string) {
     return this.taskModel
       .findByIdAndUpdate(
         _id,
