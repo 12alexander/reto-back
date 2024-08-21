@@ -11,7 +11,7 @@ export class Task {
   @Prop()
   task: string;
 
-  @Prop()
+  @Prop({ default: true })
   status: boolean;
 }
 
