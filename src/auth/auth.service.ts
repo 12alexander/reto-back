@@ -18,33 +18,50 @@ export class AuthService {
       email,
     });
 
-    if (!user) {
-      throw new UnauthorizedException();
+    if (!user || !(await this.comparePassword(pass, user.pass))) {
+      throw new UnauthorizedException('Invalid email or password');
     }
 
-    const isMatch = await bcrypt.compare(pass, user?.pass);
-
-    if (!isMatch) {
-      throw new UnauthorizedException();
-    }
     const payload = { _id: user._id, user: user.name };
 
     const token = this.jwtService.sign(payload);
 
+    const finalTime = this.getTokenExpiryTime(token);
+
+    return { token, final_time: finalTime };
+  }
+
+  async signUp(data: SignUpDto) {
+    const existingUser = await this.userModel
+      .findOne({ email: data.email })
+      .exec();
+
+    if (existingUser) {
+      throw new UnauthorizedException('User already exists');
+    }
+
+    const hashedPassword = await bcrypt.hash(data.pass, 10);
+    const user = await this.userModel.create({ ...data, pass: hashedPassword });
+
+    const payload = { _id: user._id, user: user.name };
+    const token = this.jwtService.sign(payload);
+
+    const finalTime = this.getTokenExpiryTime(token);
+
+    return { token, final_time: finalTime };
+  }
+
+  private async comparePassword(
+    inputPassword: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
+    return bcrypt.compare(inputPassword, hashedPassword);
+  }
+
+  private getTokenExpiryTime(token: string): number {
     const decoded = this.jwtService.decode(token, { complete: true }) as {
       payload: { exp: number };
     };
-
-    const final_time = decoded.payload.exp * 1000;
-
-    return {
-      token,
-      final_time,
-    };
-  }
-
-  async signUp(payload: SignUpDto) {
-    const hashPass = await bcrypt.hash(payload.pass, 10);
-    return this.userModel.create({ ...payload, pass: hashPass });
+    return decoded?.payload?.exp ? decoded.payload.exp * 1000 : 0;
   }
 }
