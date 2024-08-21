@@ -20,6 +20,7 @@ export class TaskService {
     return this.taskModel
       .find({
         user_id: _id,
+        status: true,
       })
       .exec();
   }
