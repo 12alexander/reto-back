@@ -1,6 +1,7 @@
-import { Controller, Post, Body, Get } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Query } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create.dto';
 import { TaskService } from './task.service';
+import { ByIdTaskDto } from './dto/byId.dto';
 
 @Controller('task')
 export class TaskController {
@@ -12,7 +13,8 @@ export class TaskController {
   }
 
   @Get()
-  findAll() {
-    return this.taskService.findAll();
+  findAll(@Req() req: Request) {
+    const _id = 'req?.user?.id';
+    return this.taskService.findAll(_id);
   }
 }
